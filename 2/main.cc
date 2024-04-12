@@ -1,13 +1,13 @@
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <span>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <span>
 
 std::pair<bool, bool> DupCount(std::string_view line) {
     std::map<char, int> counter;
