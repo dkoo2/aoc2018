@@ -38,6 +38,15 @@ int FindNextNonMax(const std::vector<int>& ascii, int i) {
     return -1;
 }
 
+int FindPrevNonMax(const std::vector<int>& ascii, int i) {
+    for (int index = i - 1; i >= 0; --index) {
+        if (ascii[index] != INT_MAX) {
+            return index;
+        }
+    }
+    return -1;
+}
+
 }  // namespace
 
 int Polymer::Collapse() const {
@@ -53,7 +62,8 @@ int Polymer::Collapse() const {
                 ++changed;
                 ascii_cpy[i] = INT_MAX;
                 ascii_cpy[next] = INT_MAX;
-                i = i >= 2 ?  i - 2 : 0;
+                int fpnm = FindPrevNonMax(ascii_cpy, i);
+                i = fpnm - 1;
             }
         }
     } while (changed > 0);
@@ -90,7 +100,8 @@ int Polymer::ShortestAfterRemoval() const {
                             ++changed;
                             ascii_remove[i] = INT_MAX;
                             ascii_remove[next] = INT_MAX;
-                            i = i >= 2 ?  i - 2 : 0;
+                            int fpnm = FindPrevNonMax(ascii_remove, i);
+                            i = fpnm - 1;
                         }
                     }
                 } while (changed > 0);
