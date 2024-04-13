@@ -5,10 +5,11 @@
 #include <iostream>
 #include <map>
 #include <regex>
-#include <set>
 #include <span>
 #include <string>
 #include <thread>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace aoc2018 {
 
@@ -47,7 +48,9 @@ int Grid::FindLargest() const {
         std::vector<int> c(col_max_ + 1, INT_MAX);
         min_dist.push_back(std::move(c));
     }
-    std::map<std::pair<int, int>, std::set<int>> coordinates_to_min_id;
+
+    std::map<std::pair<int, int>, std::unordered_set<int>>
+        coordinates_to_min_id;
     for (int i = 0; i <= row_max_; ++i) {
         for (int j = 0; j <= col_max_; ++j) {
             for (const Coordinate& coordinate : coordinates_) {
@@ -62,6 +65,7 @@ int Grid::FindLargest() const {
             }
         }
     }
+
     std::vector<bool> infinite_uids(max_uid_ + 1, false);
     for (const auto& [coordinate, ids] : coordinates_to_min_id) {
         if ((coordinate.first == 0 || coordinate.second == 0 ||
@@ -71,23 +75,19 @@ int Grid::FindLargest() const {
         }
     }
 
-    std::map<int, int> id_to_count;
-    for (const auto& [coordinate, ids] : coordinates_to_min_id) {
-        if (ids.size() > 1) {
+    std::unordered_map<int, int> id_to_count;
+    for (const auto& [_, ids] : coordinates_to_min_id) {
+        if (ids.size() != 1) {
             continue;
         }
-        for (const int id : ids) {
-            if (infinite_uids[id]) {
-                break;
-            }
+        const int id = *ids.begin();
+        if (!infinite_uids[id]) {
             ++id_to_count[id];
         }
     }
     int largest = -1;
     for (const auto& [id, count] : id_to_count) {
-        if (count > largest) {
-            largest = count;
-        }
+        largest = std::max(largest, count);
     }
 
     return largest;
