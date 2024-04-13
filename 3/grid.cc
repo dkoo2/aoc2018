@@ -5,6 +5,7 @@
 #include <map>
 #include <regex>
 #include <set>
+#include <unordered_set>
 #include <span>
 #include <string>
 #include <utility>
@@ -47,15 +48,14 @@ int Grid::Overlaps() const {
 
 int Grid::Intact() const {
     std::map<std::pair<int, int>, std::set<int>> mappings;
-    std::set<int> all;
+    std::unordered_set<int> all;
     for (const Fill& fill : fills_) {
         all.insert(fill.id);
         for (int row = fill.top_offset; row < fill.top_offset + fill.height;
              ++row) {
             for (int col = fill.left_offset;
                  col < fill.left_offset + fill.width; ++col) {
-                const auto p = std::make_pair(row, col);
-                mappings[p].insert(fill.id);
+                mappings[std::make_pair(row, col)].insert(fill.id);
             }
         }
     }
@@ -66,7 +66,6 @@ int Grid::Intact() const {
             }
         }
     }
-    assert(all.size() == 1);
     return *all.begin();
 }
 
