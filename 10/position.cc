@@ -17,11 +17,8 @@ Grid::Grid(std::span<const std::string> lines) {
     for (const std::string& l : lines) {
         std::smatch match;
         if (std::regex_search(l.begin(), l.end(), match, matcher)) {
-            const int px = std::stoi(match[1]);
-            const int py = std::stoi(match[2]);
-            const int vx = std::stoi(match[3]);
-            const int vy = std::stoi(match[4]);
-            points_.emplace_back(px, py, vx, vy);
+            points_.emplace_back(std::stoi(match[1]), std::stoi(match[2]),
+                                 std::stoi(match[3]), std::stoi(match[4]));
         }
     }
 }
