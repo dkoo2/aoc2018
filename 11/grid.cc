@@ -50,15 +50,14 @@ std::tuple<int, int, int> Grid::Largest() const {
                 int start = 2 + t_num;
                 for (int s = start; s <= 300; s += num_threads) {
                     std::tuple<int, int, int> max_s = LargestForDim(s);
-                    if (std::get<2>(max_s) > curr_max) {
-                        {
-                            curr_max.store(std::get<2>(max_s),
-                                           std::memory_order_relaxed);
-                            curr_max_s.store(s, std::memory_order_relaxed);
-                            curr_max_pair.store(
-                                {std::get<0>(max_s), std::get<1>(max_s)},
-                                std::memory_order_relaxed);
-                        }
+                    if (std::get<2>(max_s) >
+                        curr_max.load(std::memory_order_relaxed)) {
+                        curr_max.store(std::get<2>(max_s),
+                                       std::memory_order_relaxed);
+                        curr_max_s.store(s, std::memory_order_relaxed);
+                        curr_max_pair.store(
+                            {std::get<0>(max_s), std::get<1>(max_s)},
+                            std::memory_order_relaxed);
                     }
                 }
             }));
