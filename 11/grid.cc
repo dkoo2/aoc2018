@@ -37,37 +37,34 @@ std::tuple<int, int, int> Grid::Largest() const {
     constexpr int num_threads = 12;
     threads.reserve(num_threads);
 
-    std::atomic<int> curr_max(-1);
-    std::atomic<int> curr_max_s(-1);
     struct CMPair {
+        int curr_max;
+        int curr_max_s;
         int x;
         int y;
     };
-    std::atomic<CMPair> curr_max_pair({-1, -1});
+    std::atomic<CMPair> curr_max_pair({-1, -1, -1, -1});
     for (int t_num = 0; t_num < num_threads; ++t_num) {
-        threads.emplace_back(
-            std::thread([this, t_num, &curr_max, &curr_max_s, &curr_max_pair] {
-                int start = 2 + t_num;
-                for (int s = start; s <= 300; s += num_threads) {
-                    std::tuple<int, int, int> max_s = LargestForDim(s);
-                    if (std::get<2>(max_s) >
-                        curr_max.load(std::memory_order_relaxed)) {
-                        curr_max.store(std::get<2>(max_s),
-                                       std::memory_order_relaxed);
-                        curr_max_s.store(s, std::memory_order_relaxed);
-                        curr_max_pair.store(
-                            {std::get<0>(max_s), std::get<1>(max_s)},
-                            std::memory_order_relaxed);
-                    }
+        threads.emplace_back(std::thread([this, t_num, &curr_max_pair] {
+            int start = 2 + t_num;
+            for (int s = start; s <= 300; s += num_threads) {
+                std::tuple<int, int, int> max_s = LargestForDim(s);
+                if (std::get<2>(max_s) >
+                    curr_max_pair.load(std::memory_order_relaxed).curr_max) {
+                    curr_max_pair.store(
+                        {std::get<2>(max_s), s, std::get<0>(max_s),
+                         std::get<1>(max_s)},
+                        std::memory_order_relaxed);
                 }
-            }));
+            }
+        }));
     }
     for (int i = 0; i < threads.size(); ++i) {
         threads[i].join();
     }
     const int max_x = curr_max_pair.load(std::memory_order_relaxed).x;
     const int max_y = curr_max_pair.load(std::memory_order_relaxed).y;
-    const int max_s = curr_max_s.load(std::memory_order_relaxed);
+    const int max_s = curr_max_pair.load(std::memory_order_relaxed).curr_max_s;
     return std::make_tuple(max_x, max_y, max_s);
 }
 
